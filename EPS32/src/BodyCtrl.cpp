@@ -159,8 +159,8 @@ void BodyCtrl::init() {
 }
 
 void BodyCtrl::jointMiddle() {
-    // Joint middle
-    sc.WritePos(254, 511, 0, 0);
+    // Joint middle with maximum speed
+    sc.WritePos(254, 511, 0, 1023);  // Maximum speed
 }
 
 void BodyCtrl::releaseTorque() {
@@ -202,7 +202,7 @@ void BodyCtrl::jointAngle(int joint, double angleW) {
     // angle: 0-1023
     int angle = round(map(angleW, 0, 300, 0, 1024));
     GoalPWM[joint] = angle * ServoDirection[joint] + ServoMiddlePWM[joint];
-    sc.RegWritePos(jointID[joint], GoalPWM[joint], 0, 0);
+    sc.RegWritePos(jointID[joint], GoalPWM[joint], 0, 1023);  // Maximum speed
 }
 
 void BodyCtrl::allJointAngle(double angleWs[]) {
@@ -226,7 +226,7 @@ void BodyCtrl::jointRad(int joint, double rad) {
     // angle: 0-1023
     int angle = round(BodyCtrl::mapDouble(rad, 0, 5.23598, 0, 1024));
     GoalPWM[joint] = angle * ServoDirection[joint] + ServoMiddlePWM[joint];
-    sc.RegWritePos(jointID[joint], GoalPWM[joint], 0, 0);
+    sc.RegWritePos(jointID[joint], GoalPWM[joint], 0, 1023);  // Maximum speed
 }
 
 void BodyCtrl::moveTrigger(){
@@ -799,18 +799,18 @@ void BodyCtrl::setGaitParams(double maxHeight, double minHeight, double height, 
 }
 
 void BodyCtrl::robotCtrl(){
-  // move ctrl.
+  // Ultra-fast move ctrl with minimal delays
   if(!debugMode && !funcMode){
     if(moveFB == 0 && moveLR == 0 && STAND_STILL == 0){
       standMassCenter(0, 0);
       allJointAngle(GoalAngle);
       STAND_STILL = 1;
       GLOBAL_STEP = 0;
-      delay(STEP_DELAY);
+      // No delay for maximum speed
     }
     else if(moveFB == 0 && moveLR == 0 && STAND_STILL == 1){
       allJointAngle(GoalAngle);
-      delay(STEP_DELAY);
+      // No delay for maximum speed
     }
     else{
       STAND_STILL = 0;
@@ -827,7 +827,7 @@ void BodyCtrl::robotCtrl(){
       else if(moveFB == 0 && moveLR == 1){gaitTypeCtrl(GLOBAL_STEP, 0, 1);}
       allJointAngle(GoalAngle);
       GLOBAL_STEP += STEP_ITERATE;
-      delay(STEP_DELAY);
+      // No delay for maximum speed
     }
   }
 }
