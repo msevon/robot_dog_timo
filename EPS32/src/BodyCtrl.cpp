@@ -88,10 +88,10 @@ double linkage_f = wiggleError;       // the distance between Hip and A/B in ver
 double WALK_HEIGHT_MAX  = 110;
 double WALK_HEIGHT_MIN  = 75;
 double WALK_HEIGHT      = 95;
-double WALK_LIFT        = 9; // WALK_HEIGHT + WALK_LIFT <= WALK_HEIGHT_MAX.
-double WALK_RANGE       = 40;
-double WALK_ACC         = 5;
-double WALK_EXTENDED_X  = 16;
+double WALK_LIFT        = 12; // Increased from 9 to 12 for more dynamic movement
+double WALK_RANGE       = 50; // Increased from 40 to 50 for longer strides
+double WALK_ACC         = 3;  // Reduced from 5 to 3 for faster acceleration
+double WALK_EXTENDED_X  = 18; // Increased from 16 to 18 for wider stance
 double WALK_EXTENDED_Z  = 25;
 double WALK_SIDE_MAX    = 30;
 double WALK_MASS_ADJUST = 21;
@@ -108,8 +108,8 @@ float BALANCE_ROLL_BASE   = 0;
 float BALANCE_P = 0.72;
 
 float GLOBAL_STEP  = 0;
-int   STEP_DELAY   = 5;
-float STEP_ITERATE = 0.02;
+int   STEP_DELAY   = 2;  // Reduced from 5ms to 2ms for faster movement
+float STEP_ITERATE = 0.05;  // Increased from 0.02 to 0.05 for faster gait progression
 
 int SERVO_MOVE_EVERY = 0;
 
@@ -740,7 +740,7 @@ void BodyCtrl::balancing(float ACC_Y, float ACC_X){
     pitchYawRoll(BALANCE_PITCHU_BUFFER, 0, BALANCE_ROLL_BUFFER);
 
     allJointAngle(GoalAngle);
-    delay(1);
+    delay(0);  // Removed delay for faster balancing
 }
 
 // mass center adjust test.
@@ -853,27 +853,27 @@ float BodyCtrl::besselCtrl(float numStart, float numEnd, float rateInput){
 
 // Functions.
 void BodyCtrl::functionStayLow(){
-  for(float i = 0; i<=1; i+=0.02){
+  for(float i = 0; i<=1; i+=0.05){  // Increased step size from 0.02 to 0.05
     standUp(besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MIN, i));
     allJointAngle(GoalAngle);
-    delay(6);
+    delay(3);  // Reduced delay from 6ms to 3ms
   }
-  delay(300);
-  for(float i = 0; i<=1; i+=0.02){
+  delay(150);  // Reduced delay from 300ms to 150ms
+  for(float i = 0; i<=1; i+=0.05){  // Increased step size from 0.02 to 0.05
     standUp(besselCtrl(WALK_HEIGHT_MIN, WALK_HEIGHT_MAX, i));
     allJointAngle(GoalAngle);
-    delay(6);
+    delay(3);  // Reduced delay from 6ms to 3ms
   }
-  for(float i = 0; i<=1; i+=0.02){
+  for(float i = 0; i<=1; i+=0.05){  // Increased step size from 0.02 to 0.05
     standUp(besselCtrl(WALK_HEIGHT_MAX, WALK_HEIGHT, i));
     allJointAngle(GoalAngle);
-    delay(6);
+    delay(3);  // Reduced delay from 6ms to 3ms
   }
 }
 
 
 void BodyCtrl::functionHandshake(){
-  for(float i = 0; i<=1; i+=0.01){
+  for(float i = 0; i<=1; i+=0.02){  // Increased step size from 0.01 to 0.02
     singleLegCtrl(1,  besselCtrl(WALK_EXTENDED_X, 0, i), besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MAX, i), besselCtrl(WALK_EXTENDED_Z, -15, i));
     singleLegCtrl(3,  besselCtrl(WALK_EXTENDED_X, 0, i), besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MAX, i), WALK_EXTENDED_Z);
 
@@ -881,33 +881,33 @@ void BodyCtrl::functionHandshake(){
     singleLegCtrl(4,  -WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MIN-10, i), besselCtrl(WALK_EXTENDED_Z, 2*WALK_EXTENDED_Z, i));
 
     allJointAngle(GoalAngle);
-    delay(8);
+    delay(4);  // Reduced delay from 8ms to 4ms
   }
 
 
-  for(float i = 0; i<=1; i+=0.01){
+  for(float i = 0; i<=1; i+=0.02){  // Increased step size from 0.01 to 0.02
     singleLegCtrl(3,  besselCtrl(0, WALK_RANGE/2+WALK_EXTENDED_X, i), besselCtrl(WALK_HEIGHT_MAX, WALK_HEIGHT_MIN, i), besselCtrl(WALK_EXTENDED_Z, 0, i));
 
     allJointAngle(GoalAngle);
-    delay(8);
+    delay(4);  // Reduced delay from 8ms to 4ms
   }
 
   for(int shakeTimes = 0; shakeTimes < 3; shakeTimes++){
-    for(float i = 0; i<=1; i+=0.02){
+    for(float i = 0; i<=1; i+=0.04){  // Increased step size from 0.02 to 0.04
       singleLegCtrl(3,  WALK_RANGE/2+WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT_MIN, WALK_HEIGHT_MIN+30, i), 0);
 
       allJointAngle(GoalAngle);
-      delay(9);
+      delay(4);  // Reduced delay from 9ms to 4ms
     }
-    for(float i = 0; i<=1; i+=0.02){
+    for(float i = 0; i<=1; i+=0.04){  // Increased step size from 0.02 to 0.04
       singleLegCtrl(3,  WALK_RANGE/2+WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT_MIN+30, WALK_HEIGHT_MIN, i), 0);
 
       allJointAngle(GoalAngle);
-      delay(9);
+      delay(4);  // Reduced delay from 9ms to 4ms
     }
   }
 
-  for(float i = 0; i<=1; i+=0.01){
+  for(float i = 0; i<=1; i+=0.02){  // Increased step size from 0.01 to 0.02
     singleLegCtrl(1,  besselCtrl(0, WALK_EXTENDED_X, i), besselCtrl(WALK_HEIGHT_MAX, WALK_HEIGHT, i), besselCtrl(-15, WALK_EXTENDED_Z, i));
     singleLegCtrl(3,  besselCtrl(WALK_RANGE/2+WALK_EXTENDED_X, WALK_EXTENDED_X, i), besselCtrl(WALK_HEIGHT_MIN, WALK_HEIGHT, i), besselCtrl(0, WALK_EXTENDED_Z, i));
 
@@ -915,35 +915,35 @@ void BodyCtrl::functionHandshake(){
     singleLegCtrl(4,  -WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT_MIN-10, WALK_HEIGHT, i), besselCtrl(2*WALK_EXTENDED_Z, WALK_EXTENDED_Z, i));
 
     allJointAngle(GoalAngle);
-    delay(8);
+    delay(4);  // Reduced delay from 8ms to 4ms
   }
 }
 
 
 void BodyCtrl::functionJump(){
-  for(float i = 0; i<=1; i+=0.02){
+  for(float i = 0; i<=1; i+=0.04){  // Increased step size from 0.02 to 0.04
     singleLegCtrl(1, WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MIN, i), WALK_EXTENDED_Z);
     singleLegCtrl(2,-WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MIN, i), WALK_EXTENDED_Z);
     singleLegCtrl(3, WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MIN, i), WALK_EXTENDED_Z);
     singleLegCtrl(4,-WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MIN, i), WALK_EXTENDED_Z);
     allJointAngle(GoalAngle);
-    delay(12);
+    delay(6);  // Reduced delay from 12ms to 6ms
   }
-  delay(300);
+  delay(150);  // Reduced delay from 300ms to 150ms
   singleLegCtrl(1, WALK_EXTENDED_X, WALK_HEIGHT_MAX, WALK_EXTENDED_Z);
   singleLegCtrl(2,-WALK_EXTENDED_X, WALK_HEIGHT_MAX, WALK_EXTENDED_Z);
   singleLegCtrl(3, WALK_EXTENDED_X, WALK_HEIGHT_MAX, WALK_EXTENDED_Z);
   singleLegCtrl(4,-WALK_EXTENDED_X, WALK_HEIGHT_MAX, WALK_EXTENDED_Z);
   allJointAngle(GoalAngle);
-  delay(120);
+  delay(60);  // Reduced delay from 120ms to 60ms
 
-  for(float i = 0; i<=1; i+=0.02){
+  for(float i = 0; i<=1; i+=0.04){  // Increased step size from 0.02 to 0.04
     singleLegCtrl(1, WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT_MIN, WALK_HEIGHT, i), WALK_EXTENDED_Z);
     singleLegCtrl(2,-WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT_MIN, WALK_HEIGHT, i), WALK_EXTENDED_Z);
     singleLegCtrl(3, WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT_MIN, WALK_HEIGHT, i), WALK_EXTENDED_Z);
     singleLegCtrl(4,-WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT_MIN, WALK_HEIGHT, i), WALK_EXTENDED_Z);
     allJointAngle(GoalAngle);
-    delay(12);
+    delay(6);  // Reduced delay from 12ms to 6ms
   }
 }
 
