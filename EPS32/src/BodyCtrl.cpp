@@ -947,6 +947,48 @@ void BodyCtrl::functionJump(){
   }
 }
 
+void BodyCtrl::functionLayDown(){
+  // First, lower the robot body gradually
+  for(float i = 0; i<=1; i+=0.02){
+    singleLegCtrl(1, WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MIN, i), WALK_EXTENDED_Z);
+    singleLegCtrl(2,-WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MIN, i), WALK_EXTENDED_Z);
+    singleLegCtrl(3, WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MIN, i), WALK_EXTENDED_Z);
+    singleLegCtrl(4,-WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MIN, i), WALK_EXTENDED_Z);
+    allJointAngle(GoalAngle);
+    delay(8);
+  }
+  
+  delay(200);
+  
+  // Now spread the legs outward while keeping them low
+  for(float i = 0; i<=1; i+=0.02){
+    // Front legs spread outward
+    singleLegCtrl(1, besselCtrl(WALK_EXTENDED_X, WALK_EXTENDED_X + 20, i), WALK_HEIGHT_MIN, besselCtrl(WALK_EXTENDED_Z, WALK_EXTENDED_Z + 15, i));
+    singleLegCtrl(3, besselCtrl(WALK_EXTENDED_X, WALK_EXTENDED_X + 20, i), WALK_HEIGHT_MIN, besselCtrl(WALK_EXTENDED_Z, WALK_EXTENDED_Z - 15, i));
+    
+    // Hind legs spread outward
+    singleLegCtrl(2, besselCtrl(-WALK_EXTENDED_X, -WALK_EXTENDED_X - 20, i), WALK_HEIGHT_MIN, besselCtrl(WALK_EXTENDED_Z, WALK_EXTENDED_Z + 15, i));
+    singleLegCtrl(4, besselCtrl(-WALK_EXTENDED_X, -WALK_EXTENDED_X - 20, i), WALK_HEIGHT_MIN, besselCtrl(WALK_EXTENDED_Z, WALK_EXTENDED_Z - 15, i));
+    
+    allJointAngle(GoalAngle);
+    delay(8);
+  }
+  
+  delay(1000); // Stay in lay down position for 1 second
+  
+  // Return to normal standing position
+  for(float i = 0; i<=1; i+=0.02){
+    // Bring legs back to normal positions
+    singleLegCtrl(1, besselCtrl(WALK_EXTENDED_X + 20, WALK_EXTENDED_X, i), besselCtrl(WALK_HEIGHT_MIN, WALK_HEIGHT, i), besselCtrl(WALK_EXTENDED_Z + 15, WALK_EXTENDED_Z, i));
+    singleLegCtrl(2, besselCtrl(-WALK_EXTENDED_X - 20, -WALK_EXTENDED_X, i), besselCtrl(WALK_HEIGHT_MIN, WALK_HEIGHT, i), besselCtrl(WALK_EXTENDED_Z + 15, WALK_EXTENDED_Z, i));
+    singleLegCtrl(3, besselCtrl(WALK_EXTENDED_X + 20, WALK_EXTENDED_X, i), besselCtrl(WALK_HEIGHT_MIN, WALK_HEIGHT, i), besselCtrl(WALK_EXTENDED_Z - 15, WALK_EXTENDED_Z, i));
+    singleLegCtrl(4, besselCtrl(-WALK_EXTENDED_X - 20, -WALK_EXTENDED_X, i), besselCtrl(WALK_HEIGHT_MIN, WALK_HEIGHT, i), besselCtrl(WALK_EXTENDED_Z - 15, WALK_EXTENDED_Z, i));
+    
+    allJointAngle(GoalAngle);
+    delay(8);
+  }
+}
+
 void BodyCtrl::ugvCtrl(float leftSpd, float rightSpd){
   if (leftSpd == rightSpd) {
     if (leftSpd == 0) {

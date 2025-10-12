@@ -1112,6 +1112,7 @@ var keyMap = {
     67: 'write_command', // C - Write Command
     68: 'right', // D - Move Right
     69: 'capture', // E - Camera Capture
+    71: 'lay_down', // G - Lay Down
     72: 'handshake', // H - Handshake
     80: 'photo_gallery', // P - Photo Gallery
     82: 'record_toggle', // R - Record Toggle
@@ -1131,6 +1132,7 @@ var ctrl_buttons = {
     // Function controls
     jump: 0,
     handshake: 0,
+    lay_down: 0,
     stay: 0,
     // Camera controls
     capture: 0,
@@ -1151,6 +1153,9 @@ function cmdProcess() {
     // Function Controls
     if (ctrl_buttons.jump == 1){
         funcsCtrl(3); // Jump
+    }
+    if (ctrl_buttons.lay_down == 1){
+        funcsCtrl(6); // Lay Down
     }
     if (ctrl_buttons.handshake == 1){
         funcsCtrl(2); // Handshake

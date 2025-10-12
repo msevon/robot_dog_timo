@@ -92,6 +92,7 @@ public:
     void functionStayLow();
     void functionHandshake();
     void functionJump();
+    void functionLayDown();
     
     void pitchYawRoll(float pitchInput, float yawInput, float rollInput);
     void steadyCtrl(int cmd);
