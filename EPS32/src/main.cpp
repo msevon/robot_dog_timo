@@ -219,6 +219,17 @@ void runMission(String missionName, int intervalTime, int loopTimes) {
 void jsonCmdReceiveHandler(const JsonDocument& jsonCmdInput){
   int cmdType;
   cmdType = jsonCmdInput["T"].as<int>();
+  
+  // Debug: Log all received commands
+  Serial.print("DEBUG: Received command T=");
+  Serial.print(cmdType);
+  if (cmdType == CMD_BASIC_FUNC) {
+    Serial.print(", func=");
+    Serial.println(jsonCmdInput["func"].as<int>());
+  } else {
+    Serial.println();
+  }
+  
   switch(cmdType){
   case CMD_UGV_CTRL:
                         bodyCtrl.ugvCtrl(jsonCmdInput["L"],
@@ -309,6 +320,7 @@ void jsonCmdReceiveHandler(const JsonDocument& jsonCmdInput){
                           steadyMode = 0;
                           bodyCtrl.standUp(95);
                         } else if (jsonCmdInput["func"] == 6) {
+                          Serial.println("DEBUG: Received lay down command (func=6)");
                           bodyCtrl.functionLayDown();
                         }
                         break;

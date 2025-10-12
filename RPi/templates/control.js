@@ -849,6 +849,7 @@ function speedCtrl(inputSpd){
 
 function funcsCtrl(index){
     // Send function control command directly without HTML button interaction
+    console.log("DEBUG: funcsCtrl called with index:", index);
     cmdJsonCmd({"T":112,"func":index});
 }
 
@@ -1161,6 +1162,7 @@ function cmdProcess() {
         funcsCtrl(1); // Stay
     }
     if (ctrl_buttons.laydown == 1){
+        console.log("DEBUG: Lay down button pressed, calling funcsCtrl(6)");
         funcsCtrl(6); // Lay Down
     }
     
@@ -1593,6 +1595,9 @@ function toggleZoom() {
 }
 
 document.onkeydown = function (event) {
+    // Debug: Log all key presses
+    console.log("DEBUG: Key pressed - keyCode:", event.keyCode, "key:", event.key);
+    
     // ESC key handling for gallery navigation
     if (event.keyCode === 27) {
         event.preventDefault();
@@ -1622,6 +1627,15 @@ document.onkeydown = function (event) {
     
     var key = keyMap[event.keyCode];
     var moveKey = moveKeyMap[event.keyCode];
+    
+    // Debug: Log key mapping
+    if (key) {
+        console.log("DEBUG: Key mapped to:", key, "ctrl_buttons[" + key + "] =", ctrl_buttons[key]);
+    }
+    if (moveKey) {
+        console.log("DEBUG: MoveKey mapped to:", moveKey, "move_buttons[" + moveKey + "] =", move_buttons[moveKey]);
+    }
+    
     if (key && ctrl_buttons[key] === 0) {
         updateButton(key, 1);
         cmdProcess();
