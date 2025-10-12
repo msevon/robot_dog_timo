@@ -823,29 +823,13 @@ function cmdSend(inputA, inputB, inputC){
 }
 
 function cmdJsonCmd(jsonData){
-    console.log("DEBUG: cmdJsonCmd called with:", JSON.stringify(jsonData));
-    
-    // Special debug for lay down command
-    if (jsonData.T === 112 && jsonData.func === 6) {
-        console.log("*** LAY DOWN COMMAND DETECTED ***");
-        console.log("DEBUG: Socket.IO connection status:", socketJson.connected);
-        console.log("DEBUG: Socket.IO readyState:", socketJson.io.readyState);
-    }
-    
     if (jsonData.T == cmd_movition_ctrl) {
         heartbeat_left = jsonData.L;
         heartbeat_right = jsonData.R;
         jsonData.L = heartbeat_left * speed_rate;
         jsonData.R = heartbeat_right * speed_rate;
     }
-    
-    console.log("DEBUG: About to emit via Socket.IO:", JSON.stringify(jsonData));
-    try {
-        socketJson.emit('json', jsonData);
-        console.log("DEBUG: Socket.IO emit successful");
-    } catch (error) {
-        console.log("DEBUG: Socket.IO emit failed:", error);
-    }
+    socketJson.emit('json', jsonData);
 }
 
 function speedCtrl(inputSpd){
@@ -865,7 +849,6 @@ function speedCtrl(inputSpd){
 
 function funcsCtrl(index){
     // Send function control command directly without HTML button interaction
-    console.log("DEBUG: funcsCtrl called with index:", index);
     cmdJsonCmd({"T":112,"func":index});
 }
 
@@ -1129,7 +1112,6 @@ var keyMap = {
     67: 'write_command', // C - Write Command
     68: 'right', // D - Move Right
     69: 'capture', // E - Camera Capture
-    71: 'laydown', // G - Lay Down
     72: 'handshake', // H - Handshake
     80: 'photo_gallery', // P - Photo Gallery
     82: 'record_toggle', // R - Record Toggle
@@ -1150,7 +1132,6 @@ var ctrl_buttons = {
     jump: 0,
     handshake: 0,
     stay: 0,
-    laydown: 0,
     // Camera controls
     capture: 0,
     record_toggle: 0,
@@ -1176,10 +1157,6 @@ function cmdProcess() {
     }
     if (ctrl_buttons.stay == 1){
         funcsCtrl(1); // Stay
-    }
-    if (ctrl_buttons.laydown == 1){
-        console.log("DEBUG: Lay down button pressed, calling funcsCtrl(6)");
-        funcsCtrl(6); // Lay Down
     }
     
     // Write Command
@@ -1611,9 +1588,6 @@ function toggleZoom() {
 }
 
 document.onkeydown = function (event) {
-    // Debug: Log all key presses
-    console.log("DEBUG: Key pressed - keyCode:", event.keyCode, "key:", event.key);
-    
     // ESC key handling for gallery navigation
     if (event.keyCode === 27) {
         event.preventDefault();
@@ -1643,15 +1617,6 @@ document.onkeydown = function (event) {
     
     var key = keyMap[event.keyCode];
     var moveKey = moveKeyMap[event.keyCode];
-    
-    // Debug: Log key mapping
-    if (key) {
-        console.log("DEBUG: Key mapped to:", key, "ctrl_buttons[" + key + "] =", ctrl_buttons[key]);
-    }
-    if (moveKey) {
-        console.log("DEBUG: MoveKey mapped to:", moveKey, "move_buttons[" + moveKey + "] =", move_buttons[moveKey]);
-    }
-    
     if (key && ctrl_buttons[key] === 0) {
         updateButton(key, 1);
         cmdProcess();

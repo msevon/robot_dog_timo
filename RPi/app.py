@@ -448,9 +448,7 @@ def serve_static_settings(filename):
 @socketio.on('json', namespace='/json')
 def handle_socket_json(json):
     try:
-        print(f"DEBUG: Received JSON command: {json}")
         base.base_json_ctrl(json) # Send JSON command to the ESP32
-        print(f"DEBUG: Command sent to ESP32")
     except Exception as e:
         print("Error handling JSON data:", e)
         return
