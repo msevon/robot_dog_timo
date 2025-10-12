@@ -585,19 +585,6 @@ function removeAllIcoClass(ElName){
 var socketJson = io('http://' + location.host + '/json');
 socketJson.emit('json', {'T':1,'L':0,'R':0})
 
-// Debug Socket.IO connection
-socketJson.on('connect', function() {
-    console.log('DEBUG: Socket.IO connected to /json');
-});
-
-socketJson.on('disconnect', function() {
-    console.log('DEBUG: Socket.IO disconnected from /json');
-});
-
-socketJson.on('connect_error', function(error) {
-    console.log('DEBUG: Socket.IO connection error:', error);
-});
-
 var socket = io('http://' + location.host + '/ctrl');
 socket.emit('request_data');
 
@@ -836,17 +823,12 @@ function cmdSend(inputA, inputB, inputC){
 }
 
 function cmdJsonCmd(jsonData){
-    console.log("DEBUG: cmdJsonCmd called with:", JSON.stringify(jsonData));
-    console.log("DEBUG: socketJson.connected =", socketJson.connected);
-    
     if (jsonData.T == cmd_movition_ctrl) {
         heartbeat_left = jsonData.L;
         heartbeat_right = jsonData.R;
         jsonData.L = heartbeat_left * speed_rate;
         jsonData.R = heartbeat_right * speed_rate;
     }
-    
-    console.log("DEBUG: Sending command via Socket.IO:", JSON.stringify(jsonData));
     socketJson.emit('json', jsonData);
 }
 

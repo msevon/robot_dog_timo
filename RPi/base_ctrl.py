@@ -190,11 +190,13 @@ class BaseController:
 		return data_read
 
 	def send_command(self, data):
+		print(f"DEBUG: Adding command to queue: {data}")
 		self.command_queue.put(data) # Add command to the queue
 
 	def process_commands(self):
 		while True:
 			data = self.command_queue.get() # Get command from the queue
+			print(f"DEBUG: Sending command to ESP32: {data}")
 			self.ser.write((json.dumps(data) + '\n').encode("utf-8")) # Write command to the serial port
 			# print(data)
 
