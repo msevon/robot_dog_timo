@@ -28,7 +28,7 @@ static int InfoPrint = 0;
 #define BAUD_RATE 115200
 
 // processing time adjustment
-static int timeOffset = 10;  // Reduced from 50 to 10 for faster processing
+static int timeOffset = 50;
 
 
 

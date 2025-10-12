@@ -544,30 +544,8 @@ void serialCtrl() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  // Reduced frequency of non-critical operations for speed
-  static unsigned long lastSerialCheck = 0;
-  static unsigned long lastServerCheck = 0;
-  static unsigned long lastDebugCheck = 0;
-  
-  unsigned long currentTime = millis();
-  
-  // Check serial every 10ms instead of every loop
-  if (currentTime - lastSerialCheck >= 10) {
-    serialCtrl();
-    lastSerialCheck = currentTime;
-  }
-  
-  // Check server every 50ms instead of every loop
-  if (currentTime - lastServerCheck >= 50) {
-    server.handleClient();
-    lastServerCheck = currentTime;
-  }
-  
-  // Check debug every 100ms instead of every loop
-  if (currentTime - lastDebugCheck >= 100) {
-    wireDebugDetect();
-    lastDebugCheck = currentTime;
-  }
+  serialCtrl();
+  server.handleClient();
 
   if (steadyMode == 1) {
     accXYZUpdate();
@@ -575,6 +553,7 @@ void loop() {
   } else {
     bodyCtrl.robotCtrl();
   }
+  wireDebugDetect();
 
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillisFB >= intervalFB) {
