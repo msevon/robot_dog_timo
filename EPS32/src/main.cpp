@@ -321,7 +321,9 @@ void jsonCmdReceiveHandler(const JsonDocument& jsonCmdInput){
                           bodyCtrl.standUp(95);
                         } else if (jsonCmdInput["func"] == 6) {
                           Serial.println("DEBUG: Received lay down command (func=6)");
+                          Serial.println("DEBUG: About to call functionLayDown()");
                           bodyCtrl.functionLayDown();
+                          Serial.println("DEBUG: functionLayDown() call completed");
                         }
                         break;
 

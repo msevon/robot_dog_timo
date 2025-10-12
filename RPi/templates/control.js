@@ -866,18 +866,7 @@ function speedCtrl(inputSpd){
 function funcsCtrl(index){
     // Send function control command directly without HTML button interaction
     console.log("DEBUG: funcsCtrl called with index:", index);
-    
-    // Test with a different command first
-    if (index === 6) {
-        console.log("DEBUG: Testing with handshake command first...");
-        cmdJsonCmd({"T":112,"func":2}); // Try handshake first
-        setTimeout(() => {
-            console.log("DEBUG: Now sending lay down command...");
-            cmdJsonCmd({"T":112,"func":6}); // Then lay down
-        }, 1000);
-    } else {
-        cmdJsonCmd({"T":112,"func":index});
-    }
+    cmdJsonCmd({"T":112,"func":index});
 }
 
 var steady_mode = false;
