@@ -823,12 +823,21 @@ function cmdSend(inputA, inputB, inputC){
 }
 
 function cmdJsonCmd(jsonData){
+    console.log("DEBUG: cmdJsonCmd called with:", JSON.stringify(jsonData));
+    
+    // Special debug for lay down command
+    if (jsonData.T === 112 && jsonData.func === 6) {
+        console.log("*** LAY DOWN COMMAND DETECTED ***");
+    }
+    
     if (jsonData.T == cmd_movition_ctrl) {
         heartbeat_left = jsonData.L;
         heartbeat_right = jsonData.R;
         jsonData.L = heartbeat_left * speed_rate;
         jsonData.R = heartbeat_right * speed_rate;
     }
+    
+    console.log("DEBUG: About to emit via Socket.IO:", JSON.stringify(jsonData));
     socketJson.emit('json', jsonData);
 }
 
