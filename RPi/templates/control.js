@@ -1112,7 +1112,6 @@ var keyMap = {
     67: 'write_command', // C - Write Command
     68: 'right', // D - Move Right
     69: 'capture', // E - Camera Capture
-    71: 'lay_down', // G - Lay Down
     72: 'handshake', // H - Handshake
     80: 'photo_gallery', // P - Photo Gallery
     82: 'record_toggle', // R - Record Toggle
@@ -1132,7 +1131,6 @@ var ctrl_buttons = {
     // Function controls
     jump: 0,
     handshake: 0,
-    lay_down: 0,
     stay: 0,
     // Camera controls
     capture: 0,
@@ -1153,10 +1151,6 @@ function cmdProcess() {
     // Function Controls
     if (ctrl_buttons.jump == 1){
         funcsCtrl(3); // Jump
-    }
-    if (ctrl_buttons.lay_down == 1){
-        console.log("Lay down function called");
-        funcsCtrl(6); // Lay Down
     }
     if (ctrl_buttons.handshake == 1){
         funcsCtrl(2); // Handshake
@@ -1623,17 +1617,11 @@ document.onkeydown = function (event) {
     
     var key = keyMap[event.keyCode];
     var moveKey = moveKeyMap[event.keyCode];
-    
-    // Debug logging for G key
-    if (event.keyCode === 71) {
-        console.log("G key pressed, key:", key, "moveKey:", moveKey);
-    }
-    
     if (key && ctrl_buttons[key] === 0) {
         updateButton(key, 1);
         cmdProcess();
-        // Reset the button state immediately for write_command and lay_down to prevent key consumption
-        if (key === 'write_command' || key === 'lay_down') {
+        // Reset the button state immediately for write_command to prevent key consumption
+        if (key === 'write_command') {
             updateButton(key, 0);
         }
     } else if (moveKey && move_buttons[moveKey] === 0) {
