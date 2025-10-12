@@ -14,10 +14,10 @@ private:
                             -16, 95, 25}; // arry to store the position of every leg
     u16 GoalPWM[12]; // array to store the goal position of each joint
     double GoalAngle[12]; // array to store the goal angle of each joint
-    u16 speedArray[12] = { 0, 0, 0,
-                           0, 0, 0,
-                           0, 0, 0,
-                           0, 0, 0}; // array to store the speed of each joint
+    u16 speedArray[12] = { 1023, 1023, 1023,
+                           1023, 1023, 1023,
+                           1023, 1023, 1023,
+                           1023, 1023, 1023}; // array to store the speed of each joint (max speed)
     // int directionArray[12]; // array to store the direction of each joint
     int ServoDirection[16] = { 1, -1, -1,
                                1,  1, -1,

@@ -88,10 +88,10 @@ double linkage_f = wiggleError;       // the distance between Hip and A/B in ver
 double WALK_HEIGHT_MAX  = 110;
 double WALK_HEIGHT_MIN  = 75;
 double WALK_HEIGHT      = 95;
-double WALK_LIFT        = 12; // Increased from 9 to 12 for more dynamic movement
-double WALK_RANGE       = 50; // Increased from 40 to 50 for longer strides
-double WALK_ACC         = 3;  // Reduced from 5 to 3 for faster acceleration
-double WALK_EXTENDED_X  = 18; // Increased from 16 to 18 for wider stance
+double WALK_LIFT        = 15; // Increased from 12 to 15 for more dynamic movement
+double WALK_RANGE       = 60; // Increased from 50 to 60 for even longer strides
+double WALK_ACC         = 2;  // Reduced from 3 to 2 for faster acceleration
+double WALK_EXTENDED_X  = 20; // Increased from 18 to 20 for wider stance
 double WALK_EXTENDED_Z  = 25;
 double WALK_SIDE_MAX    = 30;
 double WALK_MASS_ADJUST = 21;
@@ -108,8 +108,8 @@ float BALANCE_ROLL_BASE   = 0;
 float BALANCE_P = 0.72;
 
 float GLOBAL_STEP  = 0;
-int   STEP_DELAY   = 2;  // Reduced from 5ms to 2ms for faster movement
-float STEP_ITERATE = 0.05;  // Increased from 0.02 to 0.05 for faster gait progression
+int   STEP_DELAY   = 0;  // Eliminated delay completely for maximum speed
+float STEP_ITERATE = 0.1;  // Increased from 0.02 to 0.1 for much faster gait progression
 
 int SERVO_MOVE_EVERY = 0;
 
@@ -152,8 +152,8 @@ int GAIT_TYPE = 0;
 
 // --- --- --- --- --- ---
 void BodyCtrl::init() {
-    // Initialize BodyCtrl
-    Serial1.begin(1000000, SERIAL_8N1, BUS_SERVO_RX, BUS_SERVO_TX);
+    // Initialize BodyCtrl with faster baud rate
+    Serial1.begin(2000000, SERIAL_8N1, BUS_SERVO_RX, BUS_SERVO_TX);  // Increased from 1M to 2M baud
     sc.pSerial = &Serial1;
     while(!Serial1) {}
 }
