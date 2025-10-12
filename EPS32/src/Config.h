@@ -82,7 +82,6 @@ static int timeOffset = 50;
 // 3 -> jump
 // 4 -> steady on
 // 5 -> steady off
-// 6 -> layDown
 // {"T":112,"func":2}
 #define CMD_BASIC_FUNC 112
 

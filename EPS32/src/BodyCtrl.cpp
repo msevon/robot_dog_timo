@@ -947,65 +947,6 @@ void BodyCtrl::functionJump(){
   }
 }
 
-void BodyCtrl::functionLayDown(){
-  Serial.println("DEBUG: Starting lay down movement...");
-  
-  // Step 1: Lower the robot body gradually
-  Serial.println("DEBUG: Step 1 - Lowering robot body...");
-  for(float i = 0; i<=1; i+=0.02){
-    Serial.print("DEBUG: Lowering progress: ");
-    Serial.println(i * 100);
-    
-    singleLegCtrl(1, WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MIN, i), WALK_EXTENDED_Z);
-    singleLegCtrl(2,-WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MIN, i), WALK_EXTENDED_Z);
-    singleLegCtrl(3, WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MIN, i), WALK_EXTENDED_Z);
-    singleLegCtrl(4,-WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MIN, i), WALK_EXTENDED_Z);
-    allJointAngle(GoalAngle);
-    delay(8);
-  }
-  
-  Serial.println("DEBUG: Step 1 completed - Robot body lowered");
-  delay(500);
-  
-  // Step 2: Spread legs outward (extend X position)
-  Serial.println("DEBUG: Step 2 - Spreading legs outward...");
-  for(float i = 0; i<=1; i+=0.02){
-    Serial.print("DEBUG: Spreading progress: ");
-    Serial.println(i * 100);
-    
-    // Extend front legs outward
-    singleLegCtrl(1, besselCtrl(WALK_EXTENDED_X, WALK_EXTENDED_X + 20, i), WALK_HEIGHT_MIN, WALK_EXTENDED_Z);
-    singleLegCtrl(3, besselCtrl(WALK_EXTENDED_X, WALK_EXTENDED_X + 20, i), WALK_HEIGHT_MIN, WALK_EXTENDED_Z);
-    
-    // Extend back legs outward
-    singleLegCtrl(2, besselCtrl(-WALK_EXTENDED_X, -WALK_EXTENDED_X - 20, i), WALK_HEIGHT_MIN, WALK_EXTENDED_Z);
-    singleLegCtrl(4, besselCtrl(-WALK_EXTENDED_X, -WALK_EXTENDED_X - 20, i), WALK_HEIGHT_MIN, WALK_EXTENDED_Z);
-    
-    allJointAngle(GoalAngle);
-    delay(8);
-  }
-  
-  Serial.println("DEBUG: Step 2 completed - Legs spread outward");
-  delay(500);
-  
-  // Step 3: Lower legs further to ground level
-  Serial.println("DEBUG: Step 3 - Lowering legs to ground level...");
-  for(float i = 0; i<=1; i+=0.02){
-    Serial.print("DEBUG: Ground lowering progress: ");
-    Serial.println(i * 100);
-    
-    singleLegCtrl(1, WALK_EXTENDED_X + 20, besselCtrl(WALK_HEIGHT_MIN, WALK_HEIGHT_MIN - 15, i), WALK_EXTENDED_Z);
-    singleLegCtrl(2,-WALK_EXTENDED_X - 20, besselCtrl(WALK_HEIGHT_MIN, WALK_HEIGHT_MIN - 15, i), WALK_EXTENDED_Z);
-    singleLegCtrl(3, WALK_EXTENDED_X + 20, besselCtrl(WALK_HEIGHT_MIN, WALK_HEIGHT_MIN - 15, i), WALK_EXTENDED_Z);
-    singleLegCtrl(4,-WALK_EXTENDED_X - 20, besselCtrl(WALK_HEIGHT_MIN, WALK_HEIGHT_MIN - 15, i), WALK_EXTENDED_Z);
-    allJointAngle(GoalAngle);
-    delay(8);
-  }
-  
-  Serial.println("DEBUG: Lay down movement completed - Robot is now laying down with legs pointing outward");
-  delay(1000);
-}
-
 void BodyCtrl::ugvCtrl(float leftSpd, float rightSpd){
   if (leftSpd == rightSpd) {
     if (leftSpd == 0) {
