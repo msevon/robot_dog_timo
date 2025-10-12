@@ -828,6 +828,8 @@ function cmdJsonCmd(jsonData){
     // Special debug for lay down command
     if (jsonData.T === 112 && jsonData.func === 6) {
         console.log("*** LAY DOWN COMMAND DETECTED ***");
+        console.log("DEBUG: Socket.IO connection status:", socketJson.connected);
+        console.log("DEBUG: Socket.IO readyState:", socketJson.io.readyState);
     }
     
     if (jsonData.T == cmd_movition_ctrl) {
@@ -838,7 +840,12 @@ function cmdJsonCmd(jsonData){
     }
     
     console.log("DEBUG: About to emit via Socket.IO:", JSON.stringify(jsonData));
-    socketJson.emit('json', jsonData);
+    try {
+        socketJson.emit('json', jsonData);
+        console.log("DEBUG: Socket.IO emit successful");
+    } catch (error) {
+        console.log("DEBUG: Socket.IO emit failed:", error);
+    }
 }
 
 function speedCtrl(inputSpd){
@@ -859,7 +866,18 @@ function speedCtrl(inputSpd){
 function funcsCtrl(index){
     // Send function control command directly without HTML button interaction
     console.log("DEBUG: funcsCtrl called with index:", index);
-    cmdJsonCmd({"T":112,"func":index});
+    
+    // Test with a different command first
+    if (index === 6) {
+        console.log("DEBUG: Testing with handshake command first...");
+        cmdJsonCmd({"T":112,"func":2}); // Try handshake first
+        setTimeout(() => {
+            console.log("DEBUG: Now sending lay down command...");
+            cmdJsonCmd({"T":112,"func":6}); // Then lay down
+        }, 1000);
+    } else {
+        cmdJsonCmd({"T":112,"func":index});
+    }
 }
 
 var steady_mode = false;
