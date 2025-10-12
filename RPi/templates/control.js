@@ -1155,6 +1155,7 @@ function cmdProcess() {
         funcsCtrl(3); // Jump
     }
     if (ctrl_buttons.lay_down == 1){
+        console.log("Lay down function called");
         funcsCtrl(6); // Lay Down
     }
     if (ctrl_buttons.handshake == 1){
@@ -1622,11 +1623,17 @@ document.onkeydown = function (event) {
     
     var key = keyMap[event.keyCode];
     var moveKey = moveKeyMap[event.keyCode];
+    
+    // Debug logging for G key
+    if (event.keyCode === 71) {
+        console.log("G key pressed, key:", key, "moveKey:", moveKey);
+    }
+    
     if (key && ctrl_buttons[key] === 0) {
         updateButton(key, 1);
         cmdProcess();
-        // Reset the button state immediately for write_command to prevent key consumption
-        if (key === 'write_command') {
+        // Reset the button state immediately for write_command and lay_down to prevent key consumption
+        if (key === 'write_command' || key === 'lay_down') {
             updateButton(key, 0);
         }
     } else if (moveKey && move_buttons[moveKey] === 0) {
