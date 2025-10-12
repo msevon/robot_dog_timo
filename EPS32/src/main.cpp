@@ -308,6 +308,8 @@ void jsonCmdReceiveHandler(const JsonDocument& jsonCmdInput){
                         } else if (jsonCmdInput["func"] == 5) {
                           steadyMode = 0;
                           bodyCtrl.standUp(95);
+                        } else if (jsonCmdInput["func"] == 6) {
+                          bodyCtrl.functionLayDown();
                         }
                         break;
 
