@@ -947,6 +947,61 @@ void BodyCtrl::functionJump(){
   }
 }
 
+void BodyCtrl::functionLayDown(){
+  Serial.println("DEBUG: Starting lay down movement...");
+  
+  // Step 1: Lower the robot body gradually
+  Serial.println("DEBUG: Step 1 - Lowering robot body...");
+  for(float i = 0; i<=1; i+=0.02){
+    Serial.print("DEBUG: Lowering progress: ");
+    Serial.print(i*100);
+    Serial.println("%");
+    
+    singleLegCtrl(1, WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MIN, i), WALK_EXTENDED_Z);
+    singleLegCtrl(2,-WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MIN, i), WALK_EXTENDED_Z);
+    singleLegCtrl(3, WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MIN, i), WALK_EXTENDED_Z);
+    singleLegCtrl(4,-WALK_EXTENDED_X, besselCtrl(WALK_HEIGHT, WALK_HEIGHT_MIN, i), WALK_EXTENDED_Z);
+    allJointAngle(GoalAngle);
+    delay(8);
+  }
+  
+  Serial.println("DEBUG: Step 1 completed - Body lowered");
+  delay(500);
+  
+  // Step 2: Spread legs outward (extend X and Z positions)
+  Serial.println("DEBUG: Step 2 - Spreading legs outward...");
+  for(float i = 0; i<=1; i+=0.02){
+    Serial.print("DEBUG: Spreading progress: ");
+    Serial.print(i*100);
+    Serial.println("%");
+    
+    // Extend legs outward - increase X and Z positions
+    double extendedX = WALK_EXTENDED_X + (i * 20); // Extend X by 20mm
+    double extendedZ = WALK_EXTENDED_Z + (i * 15); // Extend Z by 15mm
+    
+    singleLegCtrl(1, extendedX, WALK_HEIGHT_MIN, extendedZ);
+    singleLegCtrl(2,-extendedX, WALK_HEIGHT_MIN, extendedZ);
+    singleLegCtrl(3, extendedX, WALK_HEIGHT_MIN, -extendedZ);
+    singleLegCtrl(4,-extendedX, WALK_HEIGHT_MIN, -extendedZ);
+    allJointAngle(GoalAngle);
+    delay(8);
+  }
+  
+  Serial.println("DEBUG: Step 2 completed - Legs spread outward");
+  delay(500);
+  
+  // Step 3: Final adjustment - ensure legs are fully extended outward
+  Serial.println("DEBUG: Step 3 - Final leg positioning...");
+  singleLegCtrl(1, WALK_EXTENDED_X + 20, WALK_HEIGHT_MIN, WALK_EXTENDED_Z + 15);
+  singleLegCtrl(2,-WALK_EXTENDED_X - 20, WALK_HEIGHT_MIN, WALK_EXTENDED_Z + 15);
+  singleLegCtrl(3, WALK_EXTENDED_X + 20, WALK_HEIGHT_MIN, -WALK_EXTENDED_Z - 15);
+  singleLegCtrl(4,-WALK_EXTENDED_X - 20, WALK_HEIGHT_MIN, -WALK_EXTENDED_Z - 15);
+  allJointAngle(GoalAngle);
+  delay(200);
+  
+  Serial.println("DEBUG: Lay down movement completed - Robot is now lying down with legs pointing outward");
+}
+
 void BodyCtrl::ugvCtrl(float leftSpd, float rightSpd){
   if (leftSpd == rightSpd) {
     if (leftSpd == 0) {
