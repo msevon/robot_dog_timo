@@ -4,30 +4,16 @@ This repository utilizes Waveshare's code as the base for their WAVEGO Pro Pi5, 
 
 ## Custom modifications
 
-This section documents the custom modifications and additions implemented for Timo the Robot Dog:
-
-### Current modifications
-- [x] Enhanced web interface with dark theme and yellow accents
-- [x] Added keyboard control reference panels on both sides
-- [x] Implemented spacebar (jump), H (handshake), and T (stay) keyboard controls
-- [x] Added gimbal reset functionality when robot moves (WASD keys)
-- [x] Improved head movement with arrow keys and continuous control
+### Implemented modifications
+- [x] Enhanced web interface with better control & command functionality
+- [x] Added gimbal reset functionality when robot moves
 - [x] Added battery percentage display to web interface
-- [x] Removed all audio functionality from the system
-- [x] Increased robot movement speeds in configuration
-- [x] Added system information printing to console every 10 seconds
-- [x] Implemented MediaPipe OFF button for disabling computer vision functions
-- [x] Enhanced camera screen size and centered layout
-- [x] Fixed layout overlapping issues with proper spacing
-- [x] Repositioned gallery and settings containers directly under camera screen
-- [x] Unified button styling for Settings, Photos, and Videos containers
-- [x] Fixed DNON command execution issue in command input box
+- [x] Optimized camera quality and frame rate
+- [x] Fixed command execution issues in command input box
 
 ### Planned features
-- [ ] Custom behavior implementations
-- [ ] Enhanced AI capabilities
+- [ ] AI self-navigation
 - [ ] Additional sensor integrations
-- [ ] Custom web interface modifications
 - [ ] Performance optimizations
 
 ## Product documentation
