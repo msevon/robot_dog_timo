@@ -10,7 +10,7 @@ This repository utilizes Waveshare's code as the base for their WAVEGO Pro Pi5, 
 - [x] Added battery percentage display to web interface
 - [x] Optimized camera quality and frame rate
 - [x] Fixed command execution issues in command input box
-- [x] My girlfriend knitted socks for the robot to prevent it from damaging the apartment floor :)
+- [x] My girlfriend knitted socks for the robot :)
 
 ### Planned features
 - [ ] Voice command control
