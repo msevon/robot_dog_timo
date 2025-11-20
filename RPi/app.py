@@ -2,6 +2,7 @@
 from base_ctrl import BaseController
 import threading
 import yaml, os
+import sys
 
 # Raspberry Pi version check.
 def is_raspberry_pi5():
@@ -51,6 +52,17 @@ import logging
 import cv_ctrl
 import os_info
 
+# Speech recognition imports
+try:
+    import speech_recognition as sr
+    import contextlib
+    import subprocess
+    import warnings
+    SPEECH_RECOGNITION_AVAILABLE = True
+except ImportError:
+    SPEECH_RECOGNITION_AVAILABLE = False
+    print("Warning: speech_recognition not available. Voice commands disabled.")
+
 # Create a SystemInfo instance
 si = os_info.SystemInfo()
 
@@ -71,6 +83,135 @@ pcs = set()
 
 # Camera funcs
 cvf = cv_ctrl.OpencvFuncs(thisPath, base)
+
+# Speech recognition setup
+if SPEECH_RECOGNITION_AVAILABLE:
+    # Suppress ALSA warnings
+    os.environ['PYTHONWARNINGS'] = 'ignore'
+    warnings.filterwarnings('ignore')
+    
+    @contextlib.contextmanager
+    def suppress_stderr():
+        """Context manager to suppress stderr"""
+        with open(os.devnull, 'w') as devnull:
+            old_stderr = sys.stderr
+            sys.stderr = devnull
+            try:
+                yield
+            finally:
+                sys.stderr = old_stderr
+    
+    def find_usb_microphone():
+        """Find the USB microphone device index"""
+        try:
+            with suppress_stderr():
+                microphones = sr.Microphone.list_microphone_names()
+            for i, name in enumerate(microphones):
+                # Look for USB audio devices or PCM2902
+                if 'usb' in name.lower() or 'pcm2902' in name.lower() or 'audio codec' in name.lower():
+                    return i
+        except:
+            pass
+        return None
+    
+    def perform_handshake():
+        """Trigger handshake movement"""
+        try:
+            base.base_json_ctrl({"T":112,"func":2})
+            print("[Voice] Handshake command executed")
+            cvf.info_update("Voice: Handshake", (0,255,255), 0.36)
+        except Exception as e:
+            print(f"[Voice] Error executing handshake: {e}")
+    
+    def voice_command_listener():
+        """Background thread that continuously listens for voice commands"""
+        if not SPEECH_RECOGNITION_AVAILABLE:
+            return
+        
+        # Check for FLAC
+        try:
+            subprocess.run(['flac', '--version'], 
+                          stdout=subprocess.DEVNULL, 
+                          stderr=subprocess.DEVNULL, 
+                          check=True)
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            print("[Voice] FLAC not installed. Voice commands disabled.")
+            print("[Voice] Install with: sudo apt-get install flac")
+            return
+        
+        r = sr.Recognizer()
+        r.energy_threshold = 4000
+        r.pause_threshold = 0.8
+        r.dynamic_energy_threshold = True
+        
+        # Find USB microphone
+        mic_index = find_usb_microphone()
+        if mic_index is None:
+            mic_index = 0
+            print("[Voice] Using default microphone")
+        else:
+            try:
+                with suppress_stderr():
+                    mic_names = sr.Microphone.list_microphone_names()
+                print(f"[Voice] Using USB microphone: {mic_names[mic_index]}")
+            except:
+                print("[Voice] Using default microphone")
+        
+        # Initialize microphone
+        try:
+            with suppress_stderr():
+                mic = sr.Microphone(device_index=mic_index)
+        except Exception as e:
+            print(f"[Voice] Error initializing microphone: {e}")
+            return
+        
+        with mic as source:
+            print("[Voice] Adjusting for ambient noise...")
+            try:
+                with suppress_stderr():
+                    r.adjust_for_ambient_noise(source, duration=1)
+            except Exception as e:
+                print(f"[Voice] Error adjusting for ambient noise: {e}")
+                return
+            
+            print(f"[Voice] Listening for 'handshake' command... (Energy threshold: {r.energy_threshold})")
+            
+            while True:
+                try:
+                    # Listen for audio
+                    with suppress_stderr():
+                        audio = r.listen(source, timeout=5, phrase_time_limit=5)
+                    
+                    # Try to recognize speech
+                    try:
+                        text = r.recognize_google(audio, language='en-US')
+                        text_lower = text.lower()
+                        print(f"[Voice] Recognized: {text}")
+                        
+                        # Check for handshake command
+                        if 'handshake' in text_lower:
+                            print("[Voice] Handshake command detected!")
+                            perform_handshake()
+                    
+                    except sr.UnknownValueError:
+                        # Could not understand audio - this is normal, just continue
+                        pass
+                    
+                    except sr.RequestError as e:
+                        error_msg = str(e)
+                        if 'FLAC' in error_msg or 'flac' in error_msg:
+                            print("[Voice] ERROR: FLAC conversion failed. Install FLAC: sudo apt-get install flac")
+                            time.sleep(5)  # Wait before retrying
+                        else:
+                            print(f"[Voice] Recognition service error: {e}")
+                    
+                except sr.WaitTimeoutError:
+                    # Timeout is normal, just continue listening
+                    continue
+                
+                except Exception as e:
+                    print(f"[Voice] Error in voice listener: {e}")
+                    time.sleep(1)
 
 # Command actions
 cmd_actions = {
@@ -588,6 +729,12 @@ if __name__ == "__main__":
     # Base data update
     base_update_thread = threading.Thread(target=base_data_loop, daemon=True)
     base_update_thread.start()
+
+    # Voice command listener (if available)
+    if SPEECH_RECOGNITION_AVAILABLE:
+        voice_thread = threading.Thread(target=voice_command_listener, daemon=True)
+        voice_thread.start()
+        print("[Voice] Voice command listener started")
 
     # Lights off
     base.lights_ctrl(0, 0)
