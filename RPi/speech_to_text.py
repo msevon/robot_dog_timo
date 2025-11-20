@@ -7,18 +7,54 @@ Listens to USB microphone and converts speech to text
 import speech_recognition as sr
 import sys
 import time
+import os
+import subprocess
+import warnings
+
+# Suppress ALSA warnings
+os.environ['PYTHONWARNINGS'] = 'ignore'
+warnings.filterwarnings('ignore')
+
+# Redirect ALSA errors to /dev/null
+import contextlib
+
+@contextlib.contextmanager
+def suppress_stderr():
+    """Context manager to suppress stderr"""
+    with open(os.devnull, 'w') as devnull:
+        old_stderr = sys.stderr
+        sys.stderr = devnull
+        try:
+            yield
+        finally:
+            sys.stderr = old_stderr
+
+def check_flac():
+    """Check if FLAC is installed"""
+    try:
+        subprocess.run(['flac', '--version'], 
+                      stdout=subprocess.DEVNULL, 
+                      stderr=subprocess.DEVNULL, 
+                      check=True)
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
 
 def list_microphones():
     """List all available microphones"""
     r = sr.Recognizer()
     print("Available microphones:")
-    for i, microphone_name in enumerate(sr.Microphone.list_microphone_names()):
+    # Suppress ALSA warnings when listing microphones
+    with suppress_stderr():
+        mic_names = sr.Microphone.list_microphone_names()
+    for i, microphone_name in enumerate(mic_names):
         print(f"  {i}: {microphone_name}")
-    return sr.Microphone.list_microphone_names()
+    return mic_names
 
 def find_usb_microphone():
     """Find the USB microphone device index"""
-    microphones = sr.Microphone.list_microphone_names()
+    with suppress_stderr():
+        microphones = sr.Microphone.list_microphone_names()
     for i, name in enumerate(microphones):
         # Look for USB audio devices or PCM2902
         if 'usb' in name.lower() or 'pcm2902' in name.lower() or 'audio codec' in name.lower():
@@ -53,9 +89,13 @@ def listen_and_recognize(mic_index=None, language='en-US', energy_threshold=4000
             mic_index = 0
     
     # Use the specified microphone
-    with sr.Microphone(device_index=mic_index) as source:
+    with suppress_stderr():
+        mic = sr.Microphone(device_index=mic_index)
+    
+    with mic as source:
         print("Adjusting for ambient noise... Please wait.")
-        r.adjust_for_ambient_noise(source, duration=1)
+        with suppress_stderr():
+            r.adjust_for_ambient_noise(source, duration=1)
         print(f"Listening... (Energy threshold: {r.energy_threshold})")
         print("Say something!")
         print("-" * 50)
@@ -63,7 +103,8 @@ def listen_and_recognize(mic_index=None, language='en-US', energy_threshold=4000
         while True:
             try:
                 # Listen for audio
-                audio = r.listen(source, timeout=5, phrase_time_limit=5)
+                with suppress_stderr():
+                    audio = r.listen(source, timeout=5, phrase_time_limit=5)
                 
                 # Try to recognize speech using Google Speech Recognition
                 try:
@@ -76,8 +117,14 @@ def listen_and_recognize(mic_index=None, language='en-US', energy_threshold=4000
                     print("-" * 50)
                     
                 except sr.RequestError as e:
-                    print(f"Could not request results from speech recognition service; {e}")
-                    print("-" * 50)
+                    error_msg = str(e)
+                    if 'FLAC' in error_msg or 'flac' in error_msg:
+                        print("ERROR: FLAC is required for Google Speech Recognition")
+                        print("Please install FLAC by running: sudo apt-get install flac")
+                        print("-" * 50)
+                    else:
+                        print(f"Could not request results from speech recognition service; {e}")
+                        print("-" * 50)
                     
             except sr.WaitTimeoutError:
                 # Timeout is normal, just continue listening
@@ -88,7 +135,13 @@ def listen_and_recognize(mic_index=None, language='en-US', energy_threshold=4000
                 break
                 
             except Exception as e:
-                print(f"Error: {e}")
+                error_msg = str(e)
+                if 'FLAC' in error_msg or 'flac' in error_msg:
+                    print("ERROR: FLAC is required for Google Speech Recognition")
+                    print("Please install FLAC by running: sudo apt-get install flac")
+                    print("-" * 50)
+                else:
+                    print(f"Error: {e}")
                 time.sleep(1)
 
 def main():
@@ -97,6 +150,18 @@ def main():
     print("Speech to Text - Raspberry Pi")
     print("=" * 50)
     print()
+    
+    # Check for FLAC
+    if not check_flac():
+        print("WARNING: FLAC is not installed!")
+        print("Google Speech Recognition requires FLAC for audio conversion.")
+        print("Please install it by running: sudo apt-get install flac")
+        print()
+        response = input("Continue anyway? (y/n): ").strip().lower()
+        if response != 'y':
+            print("Exiting. Please install FLAC and try again.")
+            sys.exit(1)
+        print()
     
     # List all microphones
     microphones = list_microphones()
