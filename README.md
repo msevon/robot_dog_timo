@@ -13,6 +13,7 @@ This repository utilizes Waveshare's code as the base for their WAVEGO Pro Pi5, 
 - [x] My girlfriend knitted socks for the robot to prevent it from damaging the apartment floor :)
 
 ### Planned features
+- [ ] Voice command control
 - [ ] AI self-navigation
 - [ ] Additional sensor integrations
 - [ ] Performance optimizations
