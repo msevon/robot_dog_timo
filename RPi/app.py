@@ -51,17 +51,25 @@ import logging
 import logging
 import cv_ctrl
 import os_info
+import contextlib
+import subprocess
+import warnings
 
 # Speech recognition imports
+SPEECH_RECOGNITION_AVAILABLE = False
+sr = None  # Initialize to None to avoid NameError
 try:
     import speech_recognition as sr
-    import contextlib
-    import subprocess
-    import warnings
+    # Test if it actually works by checking if Recognizer exists
+    _ = sr.Recognizer
     SPEECH_RECOGNITION_AVAILABLE = True
-except ImportError:
-    SPEECH_RECOGNITION_AVAILABLE = False
-    print("Warning: speech_recognition not available. Voice commands disabled.")
+except (ImportError, ModuleNotFoundError) as e:
+    print(f"Warning: speech_recognition module not found. Voice commands disabled.")
+    print(f"  Install with: pip install SpeechRecognition")
+except AttributeError as e:
+    print(f"Warning: speech_recognition module incomplete. Voice commands disabled.")
+except Exception as e:
+    print(f"Warning: Error importing speech_recognition ({type(e).__name__}: {e}). Voice commands disabled.")
 
 # Create a SystemInfo instance
 si = os_info.SystemInfo()
