@@ -57,12 +57,23 @@ import warnings
 
 # Speech recognition imports
 SPEECH_RECOGNITION_AVAILABLE = False
+VOSK_AVAILABLE = False
 sr = None  # Initialize to None to avoid NameError
+vosk_model = None
 try:
     import speech_recognition as sr
     # Test if it actually works by checking if Recognizer exists
     _ = sr.Recognizer
     SPEECH_RECOGNITION_AVAILABLE = True
+    
+    # Try to import Vosk for better recognition
+    try:
+        import vosk
+        VOSK_AVAILABLE = True
+        print("[Voice] Vosk available - will use for better accuracy")
+    except ImportError:
+        print("[Voice] Vosk not available - will use Google Speech Recognition")
+        print("[Voice] Install Vosk for better accuracy: pip install vosk")
 except (ImportError, ModuleNotFoundError) as e:
     print(f"Warning: speech_recognition module not found. Voice commands disabled.")
     print(f"  Install with: pip install SpeechRecognition")
@@ -145,21 +156,66 @@ if SPEECH_RECOGNITION_AVAILABLE:
         if not SPEECH_RECOGNITION_AVAILABLE:
             return
         
-        # Check for FLAC
-        try:
-            subprocess.run(['flac', '--version'], 
-                          stdout=subprocess.DEVNULL, 
-                          stderr=subprocess.DEVNULL, 
-                          check=True)
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            print("[Voice] FLAC not installed. Voice commands disabled.")
-            print("[Voice] Install with: sudo apt-get install flac")
-            return
+        # Check for FLAC (only needed for Google, not Vosk)
+        flac_available = False
+        if not VOSK_AVAILABLE:
+            try:
+                subprocess.run(['flac', '--version'], 
+                              stdout=subprocess.DEVNULL, 
+                              stderr=subprocess.DEVNULL, 
+                              check=True)
+                flac_available = True
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                print("[Voice] FLAC not installed. Voice commands disabled.")
+                print("[Voice] Install with: sudo apt-get install flac")
+                return
         
         r = sr.Recognizer()
         r.energy_threshold = 4000
         r.pause_threshold = 0.8
         r.dynamic_energy_threshold = True
+        
+        # Initialize Vosk model if available
+        use_vosk = False
+        vosk_model = None
+        if VOSK_AVAILABLE:
+            try:
+                import vosk
+                # Check for Vosk model in common locations
+                possible_paths = [
+                    os.path.join(thisPath, 'vosk-model-en-us-0.22'),
+                    os.path.join(thisPath, 'vosk-model-small-en-us-0.15'),
+                    os.path.expanduser('~/vosk-model-en-us-0.22'),
+                    os.path.expanduser('~/vosk-model-small-en-us-0.15'),
+                    '/usr/local/share/vosk-model-en-us-0.22',
+                    '/usr/local/share/vosk-model-small-en-us-0.15',
+                ]
+                
+                vosk_model_path = None
+                for path in possible_paths:
+                    if os.path.exists(path) and os.path.isdir(path):
+                        vosk_model_path = path
+                        break
+                
+                if vosk_model_path:
+                    try:
+                        # Initialize Vosk model
+                        vosk_model = vosk.Model(vosk_model_path)
+                        print(f"[Voice] Vosk model loaded from: {vosk_model_path}")
+                        use_vosk = True
+                    except Exception as e:
+                        print(f"[Voice] Error loading Vosk model: {e}")
+                        use_vosk = False
+                else:
+                    print("[Voice] Vosk model not found. Download instructions:")
+                    print("[Voice]   cd ~")
+                    print("[Voice]   wget https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip")
+                    print("[Voice]   unzip vosk-model-small-en-us-0.15.zip")
+                    print("[Voice] Falling back to Google Speech Recognition")
+                    use_vosk = False
+            except Exception as e:
+                print(f"[Voice] Vosk initialization error: {e}")
+                use_vosk = False
         
         # Find USB microphone
         mic_index = find_usb_microphone()
@@ -202,7 +258,19 @@ if SPEECH_RECOGNITION_AVAILABLE:
                     
                     # Try to recognize speech
                     try:
-                        text = r.recognize_google(audio, language='en-US')
+                        # Use Vosk if available, otherwise fall back to Google
+                        if use_vosk and vosk_model:
+                            try:
+                                text = r.recognize_vosk(audio, model=vosk_model)
+                                if not text or text.strip() == '':
+                                    continue
+                            except Exception as e:
+                                print(f"[Voice] Vosk recognition error: {e}")
+                                # Fall back to Google
+                                text = r.recognize_google(audio, language='en-US')
+                        else:
+                            text = r.recognize_google(audio, language='en-US')
+                        
                         text_lower = text.lower()
                         print(f"[Voice] Recognized: {text}")
                         
