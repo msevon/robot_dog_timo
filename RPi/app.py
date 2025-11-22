@@ -178,9 +178,11 @@ if SPEECH_RECOGNITION_AVAILABLE:
         # Initialize Vosk model if available
         use_vosk = False
         vosk_model = None
+        vosk_recognizer = None
         if VOSK_AVAILABLE:
             try:
                 import vosk
+                import json
                 # Check for Vosk model in common locations
                 possible_paths = [
                     os.path.join(thisPath, 'vosk-model-en-us-0.22'),
@@ -199,8 +201,10 @@ if SPEECH_RECOGNITION_AVAILABLE:
                 
                 if vosk_model_path:
                     try:
-                        # Initialize Vosk model
+                        # Initialize Vosk model and recognizer
                         vosk_model = vosk.Model(vosk_model_path)
+                        vosk_recognizer = vosk.KaldiRecognizer(vosk_model, 16000)
+                        vosk_recognizer.SetWords(True)
                         print(f"[Voice] Vosk model loaded from: {vosk_model_path}")
                         use_vosk = True
                     except Exception as e:
@@ -259,15 +263,29 @@ if SPEECH_RECOGNITION_AVAILABLE:
                     # Try to recognize speech
                     try:
                         # Use Vosk if available, otherwise fall back to Google
-                        if use_vosk and vosk_model:
+                        if use_vosk and vosk_recognizer:
                             try:
-                                text = r.recognize_vosk(audio, model=vosk_model)
+                                # Use Vosk's native API directly
+                                import json
+                                audio_data = audio.get_wav_data()
+                                
+                                # Process audio with Vosk
+                                if vosk_recognizer.AcceptWaveform(audio_data):
+                                    result = json.loads(vosk_recognizer.Result())
+                                    text = result.get('text', '')
+                                else:
+                                    result = json.loads(vosk_recognizer.PartialResult())
+                                    text = result.get('partial', '')
+                                
                                 if not text or text.strip() == '':
                                     continue
                             except Exception as e:
                                 print(f"[Voice] Vosk recognition error: {e}")
                                 # Fall back to Google
-                                text = r.recognize_google(audio, language='en-US')
+                                try:
+                                    text = r.recognize_google(audio, language='en-US')
+                                except:
+                                    continue
                         else:
                             text = r.recognize_google(audio, language='en-US')
                         
