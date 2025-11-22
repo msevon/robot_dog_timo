@@ -588,6 +588,21 @@ socketJson.emit('json', {'T':1,'L':0,'R':0})
 var socket = io('http://' + location.host + '/ctrl');
 socket.emit('request_data');
 
+// Voice recognition listener
+socket.on('voice_recognized', function(data) {
+    if (data && data.text) {
+        var voiceTextElement = document.getElementById('voice_text');
+        if (voiceTextElement) {
+            voiceTextElement.textContent = data.text;
+            // Add a highlight effect
+            voiceTextElement.style.color = '#FFD700';
+            setTimeout(function() {
+                voiceTextElement.style.color = '#4FF5C0';
+            }, 500);
+        }
+    }
+});
+
 var light_mode = 0;
 var cv_heartbeat_stop_flag = false;
 socket.on('update', function(data) {

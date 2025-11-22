@@ -131,6 +131,15 @@ if SPEECH_RECOGNITION_AVAILABLE:
         except Exception as e:
             print(f"[Voice] Error executing handshake: {e}")
     
+    def perform_jump():
+        """Trigger jump movement"""
+        try:
+            base.base_json_ctrl({"T":112,"func":3})
+            print("[Voice] Jump command executed")
+            cvf.info_update("Voice: Jump", (0,255,255), 0.36)
+        except Exception as e:
+            print(f"[Voice] Error executing jump: {e}")
+    
     def voice_command_listener():
         """Background thread that continuously listens for voice commands"""
         if not SPEECH_RECOGNITION_AVAILABLE:
@@ -182,13 +191,14 @@ if SPEECH_RECOGNITION_AVAILABLE:
                 print(f"[Voice] Error adjusting for ambient noise: {e}")
                 return
             
-            print(f"[Voice] Listening for 'handshake' command... (Energy threshold: {r.energy_threshold})")
+            print(f"[Voice] Listening for voice commands... (Energy threshold: {r.energy_threshold})")
+            print("[Voice] Commands: 'handshake', 'jump'")
             
             while True:
                 try:
-                    # Listen for audio
+                    # Listen for audio continuously
                     with suppress_stderr():
-                        audio = r.listen(source, timeout=5, phrase_time_limit=5)
+                        audio = r.listen(source, timeout=None, phrase_time_limit=5)
                     
                     # Try to recognize speech
                     try:
@@ -196,10 +206,19 @@ if SPEECH_RECOGNITION_AVAILABLE:
                         text_lower = text.lower()
                         print(f"[Voice] Recognized: {text}")
                         
-                        # Check for handshake command
+                        # Emit recognized text to web interface
+                        try:
+                            socketio.emit('voice_recognized', {'text': text}, namespace='/ctrl')
+                        except Exception as e:
+                            print(f"[Voice] Error emitting to socket: {e}")
+                        
+                        # Check for commands
                         if 'handshake' in text_lower:
                             print("[Voice] Handshake command detected!")
                             perform_handshake()
+                        elif 'jump' in text_lower:
+                            print("[Voice] Jump command detected!")
+                            perform_jump()
                     
                     except sr.UnknownValueError:
                         # Could not understand audio - this is normal, just continue

@@ -1499,6 +1499,44 @@ ul.video-list li a:hover div .normal_btn_play::before{background-image: url('./i
     text-align: center;
 }
 
+/* Voice Recognition Display */
+.voice_display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 6px;
+    background-color: rgba(255, 215, 0, 0.05);
+    min-height: 60px;
+    justify-content: center;
+}
+
+.voice_icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.voice_text {
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    color: #4FF5C0;
+    word-wrap: break-word;
+    max-width: 100%;
+    min-height: 16px;
+}
+
 /* Mobile responsive for control panels */
 @media (max-width: 768px) {
     .top_section {
